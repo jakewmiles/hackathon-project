@@ -1,12 +1,18 @@
-import { Controller, Param, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 
+export interface TransactionDto {
+  address: string;
+  amount: string;
+}
 @Controller()
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
-  @Post(':address')
-  makeTransaction(@Param('address') address: string): Promise<void> {
-    return this.transactionService.makeTransaction(address);
+  @Post()
+  makeTransaction(@Body() transaction: TransactionDto): Promise<void> {
+    console.log(transaction);
+
+    return this.transactionService.makeTransaction(transaction);
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 import { Alchemy, Network, Utils, Wallet } from 'alchemy-sdk';
+import { TransactionDto } from './transaction.controller';
 
 dotenv.config();
 const { API_KEY, PRIVATE_KEY } = process.env;
@@ -16,15 +17,18 @@ const wallet = new Wallet(PRIVATE_KEY);
 
 @Injectable()
 export class TransactionService {
-  async makeTransaction(address: string): Promise<void> {
+  async makeTransaction(transaction: TransactionDto): Promise<void> {
+    const { amount, address } = transaction;
+    console.log(amount, address);
+
     const nonce = await alchemy.core.getTransactionCount(
       wallet.address,
       'latest',
     );
 
-    const transaction = {
+    const formedTransaction = {
       to: address,
-      value: Utils.parseEther('0.001'),
+      value: Utils.parseEther(amount),
       gasLimit: '21000',
       maxPriorityFeePerGas: Utils.parseUnits('5', 'gwei'),
       maxFeePerGas: Utils.parseUnits('20', 'gwei'),
@@ -34,7 +38,7 @@ export class TransactionService {
     };
 
     try {
-      const rawTransaction = await wallet.signTransaction(transaction);
+      const rawTransaction = await wallet.signTransaction(formedTransaction);
       const tx = await alchemy.core.sendTransaction(rawTransaction);
       console.log('Sent transaction', tx);
     } catch (e) {
